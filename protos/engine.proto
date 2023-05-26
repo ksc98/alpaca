@@ -1,0 +1,18 @@
+syntax = "proto3";
+package engine;
+
+service Engine {
+    rpc Buy (BuyRequest) returns (BuyResponse);
+}
+
+message BuyRequest {
+  string ticker = 1;
+  int32 value = 2;
+  int32 quantity = 3;
+  int64 time = 4;
+  string exchange = 5;
+}
+
+message BuyResponse {
+    string message = 1;
+}

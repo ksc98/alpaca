@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  dragonfly:
+    container_name: dragonfly
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+    # `host` mode is NOT currently supported in Swarm Mode.
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+    # network_mode: "host"
+    volumes:
+      - dragonflydata:/data
+
+  engine:
+    container_name: engine
+    build:
+      context: ./
+      dockerfile: ./engine/Dockerfile
+    ports:
+      - "0.0.0.0:4321:4321"
+
+
+  
+  poller:
+    build:
+      context: ./poller
+    environment:
+      - REDIS_HOSTNAME=dragonfly
+    depends_on:
+      - dragonfly
+    
+
+volumes:
+  dragonflydata:
