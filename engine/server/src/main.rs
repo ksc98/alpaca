@@ -1,38 +1,29 @@
-use engine::{
-    engine_server::{Engine, EngineServer},
-    BuyRequest, BuyResponse,
-};
-use tonic::{transport::Server, Request, Response, Status};
-
+#[warn(dead_code)]
 pub mod engine {
     tonic::include_proto!("engine");
 }
+mod cache;
+mod engine_service;
+mod redis_cache;
 
-#[derive(Debug, Default)]
-pub struct EngineService {}
-
-#[tonic::async_trait]
-impl Engine for EngineService {
-    async fn buy(&self, request: Request<BuyRequest>) -> Result<Response<BuyResponse>, Status> {
-        let r = request.into_inner();
-        println!("received buy request for {}", r.ticker);
-        Ok(Response::new(engine::BuyResponse {
-            message: {
-                format!(
-                    "Ticker: {}\nValue: {}\nQuantity: {}\nTime: {}\nExchange: {}",
-                    r.ticker, r.value, r.quantity, r.time, r.exchange,
-                )
-            },
-        }))
-    }
-}
+use engine::engine_server::EngineServer;
+use engine_service::EngineService;
+use env_logger::Builder as Logger;
+use log::{debug, error, info, warn};
+use redis_cache::RedisCache;
+use tonic::transport::Server;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let address = "0.0.0.0:4321".parse().unwrap();
-    let engine_service = EngineService::default();
+    let mut logger = Logger::new();
+    logger.filter_level(log::LevelFilter::Info);
+    logger.init();
 
-    println!("starting server...");
+    let address = "0.0.0.0:4321".parse().unwrap();
+    let backend = RedisCache::new();
+    let engine_service = EngineService::new(backend);
+
+    info!("starting server...");
     Server::builder()
         .add_service(EngineServer::new(engine_service))
         .serve(address)
