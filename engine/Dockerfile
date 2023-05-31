@@ -19,9 +19,14 @@ ARG CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
 EXPOSE 4321
 
-# Copy the entire source code to the container
-COPY ./engine .
-RUN cargo install --path .
+COPY ./engine/Cargo.toml .
+RUN mkdir ./src && echo 'fn main() { println!("Dummy!"); }' > ./src/main.rs
+RUN cargo build --release
+RUN rm -rf ./src
+COPY ./engine/src ./src
+COPY ./engine/build.rs .
+RUN touch -a -m ./src/main.rs
 
-# Set the entry point for the container
-CMD ["cargo", "run", "--release"]
+RUN cargo build --release
+
+CMD ["target/release/engine"]
