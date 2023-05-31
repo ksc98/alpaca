@@ -11,9 +11,9 @@ services:
     # For better performance, consider `host` mode instead `port` to avoid docker NAT.
     # `host` mode is NOT currently supported in Swarm Mode.
     # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
-    # network_mode: "host"
     volumes:
       - dragonflydata:/data
+    network_mode: "host"
 
   engine:
     container_name: engine
@@ -21,22 +21,20 @@ services:
       context: ./
       dockerfile: ./engine/Dockerfile
     environment:
-      - REDIS_HOST=dragonfly
+      - REDIS_HOST=localhost
     depends_on:
       - dragonfly
     ports:
       - "0.0.0.0:4321:4321"
+    network_mode: "host"
 
-
-  
   poller:
     build:
       context: ./poller
     environment:
       - REDIS_HOSTNAME=dragonfly
     depends_on:
-      - dragonfly
-    
+      - dragonfly    
 
 volumes:
   dragonflydata:
