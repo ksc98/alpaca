@@ -24,6 +24,7 @@ impl RedisCache {
     pub fn new() -> Box<dyn EngineCache> {
         let redis_url = redis_url!("REDIS_HOST", "localhost");
         let client = redis::Client::open(redis_url).unwrap();
+        let _ = client.get_connection().unwrap();
         info!("connected to redis!");
         Box::new(RedisCache { client })
     }

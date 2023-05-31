@@ -20,7 +20,7 @@ ARG CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 EXPOSE 4321
 
 # Copy the entire source code to the container
-COPY ./engine/server .
+COPY ./engine .
 RUN cargo install --path .
 
 # Set the entry point for the container
